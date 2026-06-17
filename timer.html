@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Workout Timer</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f3;
+    --bg3: #efefed;
+    --bg-info: #e6f1fb;
+    --text: #1a1a18;
+    --text2: #6b6b67;
+    --text3: #9b9b97;
+    --text-info: #185fa5;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --border-info: #185fa5;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --bg2: #2a2a28;
+      --bg3: #333331;
+      --bg-info: #0c447c22;
+      --text: #f0f0ee;
+      --text2: #a0a09c;
+      --text3: #6b6b67;
+      --text-info: #85b7eb;
+      --border: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.22);
+      --border-info: #85b7eb;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg3);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .card {
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    padding: 1.5rem 1.25rem 1rem;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .app-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    text-align: center;
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.04em;
+  }
+
+  .timer-display {
+    font-size: 84px;
+    font-weight: 500;
+    text-align: center;
+    letter-spacing: -3px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .timer-label {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text2);
+    min-height: 20px;
+    margin: 0.3rem 0 0.75rem;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--text);
+    border-radius: 2px;
+    transition: width 0.8s linear;
+  }
+
+  .set-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .dot.done { background: var(--text2); }
+  .dot.current { background: var(--text); }
+
+  .big-tap {
+    width: 100%;
+    padding: 28px 0;
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border2);
+    background: var(--bg);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+    transition: background 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .big-tap:active { background: var(--bg2); transform: scale(0.99); }
+
+  .big-tap.running {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  .big-tap i { font-size: 20px; }
+
+  .mini-controls {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 6px;
+    margin-bottom: 1.25rem;
+  }
+
+  .mini-btn {
+    padding: 10px 6px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border);
+    background: var(--bg2);
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mini-btn:active { transform: scale(0.97); }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0.75rem 0 0.4rem;
+  }
+
+  .preset-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 6px;
+    margin-bottom: 0.25rem;
+  }
+
+  .p-btn {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 8px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .p-btn:active { background: var(--bg3); }
+
+  .p-btn.active {
+    border: 1.5px solid var(--border-info);
+    background: var(--bg-info);
+    color: var(--text-info);
+  }
+
+  .p-btn .pname { font-weight: 500; display: block; font-size: 13px; }
+
+  .p-btn .psub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+    display: block;
+  }
+
+  .p-btn.active .psub { color: var(--text-info); opacity: 0.75; }
+
+  .voice-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0 0;
+    border-top: 0.5px solid var(--border);
+    margin-top: 0.75rem;
+  }
+
+  .voice-status {
+    font-size: 12px;
+    color: var(--text2);
+    flex: 1;
+  }
+
+  .voice-btn {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text);
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .voice-btn.listening {
+    border-color: #a32d2d;
+    color: #a32d2d;
+    background: #fcebeb;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .voice-btn.listening {
+      border-color: #f09595;
+      color: #f09595;
+      background: #501313;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="app-title">Workout Timer</div>
+
+  <div class="timer-display" id="display">0:30</div>
+  <div class="timer-label" id="timerLabel">Hold 30 — tap to start</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="set-row" id="setDots"></div>
+
+  <button class="big-tap" id="startBtn" onclick="toggleTimer()">
+    <i class="ti ti-player-play" id="startIcon"></i>
+    <span id="startTxt">Start</span>
+  </button>
+
+  <div class="mini-controls">
+    <button class="mini-btn" onclick="nextSet()"><i class="ti ti-skip-forward"></i> Next set</button>
+    <button class="mini-btn" onclick="resetTimer()"><i class="ti ti-refresh"></i> Reset</button>
+    <button class="mini-btn" onclick="resetAll()"><i class="ti ti-x"></i> All sets</button>
+  </div>
+
+  <div class="section-label">Hold</div>
+  <div class="preset-row">
+    <button class="p-btn active" id="p0" onclick="pick(0)"><span class="pname">Hold 30</span><span class="psub">count up · 3 sets</span></button>
+    <button class="p-btn" id="p1" onclick="pick(1)"><span class="pname">Hold 45</span><span class="psub">count up · 3 sets</span></button>
+    <button class="p-btn" id="p2" onclick="pick(2)"><span class="pname">Hold 60</span><span class="psub">count up · 3 sets</span></button>
+  </div>
+
+  <div class="section-label">Rest</div>
+  <div class="preset-row">
+    <button class="p-btn" id="p3" onclick="pick(3)"><span class="pname">Rest 60</span><span class="psub">1 min · 3 sets</span></button>
+    <button class="p-btn" id="p4" onclick="pick(4)"><span class="pname">Rest 90</span><span class="psub">90 sec · 3 sets</span></button>
+    <button class="p-btn" id="p5" onclick="pick(5)"><span class="pname">Rest 2 min</span><span class="psub">2 min · 3 sets</span></button>
+    <button class="p-btn" id="p6" onclick="pick(6)"><span class="pname">Rest 3 min</span><span class="psub">3 min · 3 sets</span></button>
+  </div>
+
+  <div class="voice-row">
+    <i class="ti ti-microphone" style="font-size:18px;color:var(--text2)"></i>
+    <span class="voice-status" id="voiceStatus">Say "start", "stop", "next", "reset"</span>
+    <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">Enable voice</button>
+  </div>
+
+</div>
+
+<script>
+const presets = [
+  { name:'Hold 30', mode:'up', dur:30, sets:3 },
+  { name:'Hold 45', mode:'up', dur:45, sets:3 },
+  { name:'Hold 60', mode:'up', dur:60, sets:3 },
+  { name:'Rest 60', mode:'down', dur:60, sets:3 },
+  { name:'Rest 90', mode:'down', dur:90, sets:3 },
+  { name:'Rest 2 min', mode:'down', dur:120, sets:3 },
+  { name:'Rest 3 min', mode:'down', dur:180, sets:3 },
+];
+
+let s = {
+  preset:0, mode:'up', dur:30, sets:3,
+  currentSet:1, elapsed:0, remaining:30,
+  running:false, interval:null,
+  voiceActive:false, recognition:null
+};
+
+function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
+
+function fmt(sec) {
+  sec = Math.max(0, Math.round(sec));
+  return Math.floor(sec/60) + ':' + String(sec%60).padStart(2,'0');
+}
+
+function render() {
+  const disp = document.getElementById('display');
+  const lbl = document.getElementById('timerLabel');
+  const fill = document.getElementById('progressFill');
+
+  if (s.mode === 'up') {
+    disp.textContent = fmt(s.elapsed);
+    fill.style.width = Math.min(s.elapsed / s.dur * 100, 100) + '%';
+    if (!s.running && s.elapsed === 0) lbl.textContent = presets[s.preset].name + ' — tap to start';
+    else if (s.running) lbl.textContent = 'Holding...';
+    else lbl.textContent = fmt(s.elapsed) + ' held';
+  } else {
+    disp.textContent = fmt(s.remaining);
+    fill.style.width = (s.remaining / s.dur * 100) + '%';
+    if (!s.running && s.remaining === s.dur) lbl.textContent = presets[s.preset].name + ' — tap to start';
+    else if (s.running) lbl.textContent = 'Resting...';
+    else lbl.textContent = 'Done — start next set';
+  }
+
+  const btn = document.getElementById('startBtn');
+  const icon = document.getElementById('startIcon');
+  const txt = document.getElementById('startTxt');
+  if (s.running) {
+    btn.classList.add('running');
+    icon.className = 'ti ti-player-pause';
+    txt.textContent = 'Pause';
+  } else {
+    btn.classList.remove('running');
+    icon.className = 'ti ti-player-play';
+    txt.textContent = 'Start';
+  }
+
+  const dots = document.getElementById('setDots');
+  dots.innerHTML = '';
+  for (let i = 1; i <= s.sets; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < s.currentSet ? ' done' : i === s.currentSet ? ' current' : '');
+    dots.appendChild(d);
+  }
+}
+
+function tick() {
+  if (s.mode === 'up') {
+    s.elapsed++;
+    if (s.elapsed === s.dur) vib([200,100,200,100,200]);
+    else if (s.elapsed % 10 === 0) vib([40]);
+  } else {
+    s.remaining--;
+    if (s.remaining === 10) vib([100,50,100]);
+    else if (s.remaining <= 3 && s.remaining > 0) vib([80]);
+    else if (s.remaining <= 0) {
+      s.remaining = 0;
+      stopTimer();
+      vib([300,150,300]);
+    }
+  }
+  render();
+}
+
+function startTimer() {
+  if (s.running) return;
+  s.running = true;
+  s.interval = setInterval(tick, 1000);
+  vib([50]);
+  render();
+}
+
+function stopTimer() {
+  s.running = false;
+  clearInterval(s.interval);
+  render();
+}
+
+function toggleTimer() { s.running ? stopTimer() : startTimer(); }
+
+function resetTimer() {
+  stopTimer();
+  s.elapsed = 0;
+  s.remaining = s.dur;
+  render();
+}
+
+function resetAll() {
+  stopTimer();
+  s.elapsed = 0;
+  s.remaining = s.dur;
+  s.currentSet = 1;
+  render();
+}
+
+function nextSet() {
+  stopTimer();
+  s.elapsed = 0;
+  s.remaining = s.dur;
+  if (s.currentSet < s.sets) { s.currentSet++; vib([80]); }
+  render();
+}
+
+function pick(idx) {
+  document.querySelectorAll('.p-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  const p = presets[idx];
+  stopTimer();
+  s.preset = idx; s.mode = p.mode; s.dur = p.dur;
+  s.sets = p.sets; s.currentSet = 1;
+  s.elapsed = 0; s.remaining = p.dur;
+  render();
+}
+
+function toggleVoice() { s.voiceActive ? stopVoice() : startVoice(); }
+
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { document.getElementById('voiceStatus').textContent = 'Not supported in this browser'; return; }
+  const r = new SR();
+  r.continuous = true;
+  r.interimResults = false;
+  r.lang = 'en-US';
+  r.onresult = e => {
+    const cmd = e.results[e.results.length-1][0].transcript.trim().toLowerCase();
+    document.getElementById('voiceStatus').textContent = '"' + cmd + '"';
+    if (cmd.includes('start') || cmd.includes('go')) startTimer();
+    else if (cmd.includes('stop') || cmd.includes('pause')) stopTimer();
+    else if (cmd.includes('next')) nextSet();
+    else if (cmd.includes('reset')) resetTimer();
+  };
+  r.onerror = () => stopVoice();
+  r.onend = () => { if (s.voiceActive) r.start(); };
+  r.start();
+  s.recognition = r;
+  s.voiceActive = true;
+  document.getElementById('voiceBtn').className = 'voice-btn listening';
+  document.getElementById('voiceBtn').textContent = 'Voice on';
+  document.getElementById('voiceStatus').textContent = 'Listening...';
+}
+
+function stopVoice() {
+  if (s.recognition) { s.recognition.abort(); s.recognition = null; }
+  s.voiceActive = false;
+  document.getElementById('voiceBtn').className = 'voice-btn';
+  document.getElementById('voiceBtn').textContent = 'Enable voice';
+  document.getElementById('voiceStatus').textContent = 'Say "start", "stop", "next", "reset"';
+}
+
+render();
+</script>
+</body>
+</html>
