@@ -408,13 +408,6 @@ function render() {
     txt.textContent = 'Start';
   }
 
-  const dots = document.getElementById('setDots');
-  dots.innerHTML = '';
-  for (let i = 1; i <= s.sets; i++) {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i < s.currentSet ? ' done' : i === s.currentSet ? ' current' : '');
-    dots.appendChild(d);
-  }
 }
 
 function tick() {
