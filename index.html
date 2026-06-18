@@ -517,7 +517,7 @@ function toggleTimer() {
   if (s.countdown > 0) { cancelCountdown(); return; }
   if (s.running) { stopTimer(); return; }
   // Only use countdown for fresh starts (elapsed=0 / remaining=dur)
-  const fresh = (s.mode === 'up' && s.elapsed === 0) || (s.mode === 'down' && s.remaining === s.dur);
+  const fresh = s.mode === 'up' && s.elapsed === 0;
   if (fresh) startCountdown();
   else startTimer();
 }
