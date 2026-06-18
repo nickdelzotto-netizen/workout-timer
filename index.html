@@ -282,17 +282,18 @@
 
   <div class="section-label">Hold</div>
   <div class="preset-row">
-    <button class="p-btn active" id="p0" onclick="pick(0)"><span class="pname">Hold 30</span><span class="psub">count up · 3 sets</span></button>
-    <button class="p-btn" id="p1" onclick="pick(1)"><span class="pname">Hold 45</span><span class="psub">count up · 3 sets</span></button>
-    <button class="p-btn" id="p2" onclick="pick(2)"><span class="pname">Hold 60</span><span class="psub">count up · 3 sets</span></button>
+    <button class="p-btn active" id="p0" onclick="pick(0)"><span class="pname">Hold 30</span><span class="psub">30 sec · 3 sets</span></button>
+    <button class="p-btn" id="p1" onclick="pick(1)"><span class="pname">Hold 45</span><span class="psub">45 sec · 3 sets</span></button>
+    <button class="p-btn" id="p2" onclick="pick(2)"><span class="pname">Hold 60</span><span class="psub">1 min · 3 sets</span></button>
+    <button class="p-btn" id="p3" onclick="pick(3)"><span class="pname">Hold 90</span><span class="psub">90 sec · 3 sets</span></button>
   </div>
 
   <div class="section-label">Rest</div>
   <div class="preset-row">
-    <button class="p-btn" id="p3" onclick="pick(3)"><span class="pname">Rest 60</span><span class="psub">1 min · 3 sets</span></button>
-    <button class="p-btn" id="p4" onclick="pick(4)"><span class="pname">Rest 90</span><span class="psub">90 sec · 3 sets</span></button>
-    <button class="p-btn" id="p5" onclick="pick(5)"><span class="pname">Rest 2 min</span><span class="psub">2 min · 3 sets</span></button>
-    <button class="p-btn" id="p6" onclick="pick(6)"><span class="pname">Rest 3 min</span><span class="psub">3 min · 3 sets</span></button>
+    <button class="p-btn" id="p4" onclick="pick(4)"><span class="pname">Rest 60</span><span class="psub">1 min · 3 sets</span></button>
+    <button class="p-btn" id="p5" onclick="pick(5)"><span class="pname">Rest 90</span><span class="psub">90 sec · 3 sets</span></button>
+    <button class="p-btn" id="p6" onclick="pick(6)"><span class="pname">Rest 2 min</span><span class="psub">2 min · 3 sets</span></button>
+    <button class="p-btn" id="p7" onclick="pick(7)"><span class="pname">Rest 3 min</span><span class="psub">3 min · 3 sets</span></button>
   </div>
 
   <div class="voice-row">
@@ -308,6 +309,7 @@ const presets = [
   { name:'Hold 30', mode:'up', dur:30, sets:3 },
   { name:'Hold 45', mode:'up', dur:45, sets:3 },
   { name:'Hold 60', mode:'up', dur:60, sets:3 },
+  { name:'Hold 90', mode:'up', dur:90, sets:3 },
   { name:'Rest 60', mode:'down', dur:60, sets:3 },
   { name:'Rest 90', mode:'down', dur:90, sets:3 },
   { name:'Rest 2 min', mode:'down', dur:120, sets:3 },
@@ -322,6 +324,9 @@ let s = {
 };
 
 function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
+
+// Strong "done" buzz: three long pulses — noticeable through a pocket
+function vibDone() { vib([400, 150, 400, 150, 400]); }
 
 function fmt(sec) {
   sec = Math.max(0, Math.round(sec));
@@ -338,7 +343,7 @@ function render() {
     fill.style.width = Math.min(s.elapsed / s.dur * 100, 100) + '%';
     if (!s.running && s.elapsed === 0) lbl.textContent = presets[s.preset].name + ' — tap to start';
     else if (s.running) lbl.textContent = 'Holding...';
-    else lbl.textContent = fmt(s.elapsed) + ' held';
+    else lbl.textContent = fmt(s.elapsed) + ' held ✓';
   } else {
     disp.textContent = fmt(s.remaining);
     fill.style.width = (s.remaining / s.dur * 100) + '%';
@@ -372,16 +377,21 @@ function render() {
 function tick() {
   if (s.mode === 'up') {
     s.elapsed++;
-    if (s.elapsed === s.dur) vib([200,100,200,100,200]);
-    else if (s.elapsed % 10 === 0) vib([40]);
+    if (s.elapsed >= s.dur) {
+      s.elapsed = s.dur;
+      stopTimer();
+      vibDone();          // strong buzz at target
+    } else if (s.elapsed % 10 === 0) {
+      vib([40]);          // gentle tick every 10s
+    }
   } else {
     s.remaining--;
-    if (s.remaining === 10) vib([100,50,100]);
+    if (s.remaining === 10) vib([100, 50, 100]);
     else if (s.remaining <= 3 && s.remaining > 0) vib([80]);
     else if (s.remaining <= 0) {
       s.remaining = 0;
       stopTimer();
-      vib([300,150,300]);
+      vibDone();          // strong buzz at zero
     }
   }
   render();
