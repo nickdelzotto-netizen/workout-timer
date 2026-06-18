@@ -389,7 +389,7 @@ function render() {
     fill.style.width = (s.remaining / s.dur * 100) + '%';
     if (!s.running && s.remaining === s.dur) lbl.textContent = presets[s.preset].name + ' — tap to start';
     else if (s.running) lbl.textContent = 'Resting...';
-    else lbl.textContent = 'Done — start next set';
+    else lbl.textContent = 'Done';
   }
 
   const btn = document.getElementById('startBtn');
