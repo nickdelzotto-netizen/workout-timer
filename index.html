@@ -323,10 +323,41 @@ let s = {
   voiceActive:false, recognition:null
 };
 
-function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
+// Web Audio context — created on first user interaction to satisfy iOS autoplay policy
+let audioCtx = null;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
 
-// Strong "done" buzz: three long pulses — noticeable through a pocket
-function vibDone() { vib([400, 150, 400, 150, 400]); }
+// Soft bell: sine wave at given frequency, fades out over `duration` seconds at low volume
+function bell(freq, duration, volume) {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+
+// Completion: two soft chime notes, like a gentle wind chime
+function vibDone() {
+  bell(880, 1.8, 0.18);
+  setTimeout(() => bell(1100, 1.4, 0.12), 320);
+}
+
+// Subtle mid-set tick at every 10s: single very soft high tone
+function vib(p) {
+  // Only play a sound for the 10s tick pattern (array with one short value)
+  if (Array.isArray(p) && p[0] <= 50) bell(1200, 0.25, 0.05);
+}
 
 function fmt(sec) {
   sec = Math.max(0, Math.round(sec));
@@ -399,9 +430,11 @@ function tick() {
 
 function startTimer() {
   if (s.running) return;
+  // Unlock AudioContext on iOS (requires user gesture)
+  const ctx = getCtx();
+  if (ctx.state === 'suspended') ctx.resume();
   s.running = true;
   s.interval = setInterval(tick, 1000);
-  vib([50]);
   render();
 }
 
