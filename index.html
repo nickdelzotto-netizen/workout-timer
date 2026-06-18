@@ -414,6 +414,7 @@ function tick() {
       s.elapsed = s.dur;
       stopTimer();
       vibDone();
+      setTimeout(() => { s.elapsed = 0; render(); }, 2000);
     } else if (s.elapsed % 10 === 0) {
       vib([40]);
     }
@@ -425,6 +426,7 @@ function tick() {
       s.remaining = 0;
       stopTimer();
       vibDone();
+      setTimeout(() => { s.remaining = s.dur; render(); }, 2000);
     }
   }
   render();
