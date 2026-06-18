@@ -149,29 +149,8 @@
 
   .big-tap i { font-size: 20px; }
 
-  .mini-controls {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0,1fr));
-    gap: 6px;
-    margin-bottom: 1.25rem;
-  }
+ 
 
-  .mini-btn {
-    padding: 10px 6px;
-    border-radius: var(--radius-md);
-    border: 0.5px solid var(--border);
-    background: var(--bg2);
-    font-size: 13px;
-    cursor: pointer;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .mini-btn:active { transform: scale(0.97); }
 
   .section-label {
     font-size: 11px;
@@ -270,7 +249,6 @@
   <div class="timer-display" id="display">0:30</div>
   <div class="timer-label" id="timerLabel">Hold 30 — tap to start</div>
   <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-  <div class="set-row" id="setDots"></div>
 
   <button class="big-tap" id="startBtn" onclick="toggleTimer()">
     <i class="ti ti-player-play" id="startIcon"></i>
@@ -527,24 +505,6 @@ function resetTimer() {
   stopTimer();
   s.elapsed = 0;
   s.remaining = s.dur;
-  render();
-}
-
-function resetAll() {
-  cancelCountdown();
-  stopTimer();
-  s.elapsed = 0;
-  s.remaining = s.dur;
-  s.currentSet = 1;
-  render();
-}
-
-function nextSet() {
-  cancelCountdown();
-  stopTimer();
-  s.elapsed = 0;
-  s.remaining = s.dur;
-  if (s.currentSet < s.sets) { s.currentSet++; vib([80]); }
   render();
 }
 
